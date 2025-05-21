@@ -1,33 +1,58 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
-export class UserService {
-  createUser(body: any) {
-    console.log(body);
-    return {
-      username: 'Dara',
-      email: 'dara@gmail.com',
-      password: '123',
-    };
+export class UsersService {
+  constructor(
+    @InjectRepository(User)
+    private usersRepo: Repository<User>,
+  ) {}
+
+  create(userData: Partial<User>) {
+    const user = this.usersRepo.create(userData);
+    return this.usersRepo.save(user);
   }
-  getUser(username: string) {
-    console.log(username);
-    return {
-      username: 'Dara',
-      email: 'dara@gmail.com',
-      password: '123',
-    };
+
+  findAll() {
+    return this.usersRepo.find({ relations: ['tasks'] });
   }
-  updateUser(body: any) {
-    console.log(body);
-    return {
-      username: 'Dara',
-      email: 'dara@gmail.com',
-      password: '123',
-    };
+
+  findOne(id: number) {
+    return this.usersRepo.findOne({ where: { id }, relations: ['tasks'] });
   }
-  deleteUser(username: string) {
-    console.log(username);
-    return { message: 'success' };
+
+  remove(id: number) {
+    return this.usersRepo.delete(id);
+  }
+
+  async update(id: number, updateData: Partial<User>) {
+    await this.usersRepo.update(id, updateData);
+    return this.findOne(id);
+  }
+
+  async getUser(username: string) {
+    return this.usersRepo.findOne({ where: { username } });
+  }
+
+  async createUser(data: CreateUserDto): Promise<User> {
+    const user = this.usersRepo.create(data);
+    return this.usersRepo.save(user);
+  }
+
+  async updateUser(data: CreateUserDto): Promise<User> {
+    const user = await this.usersRepo.findOne({
+      where: { username: data.username },
+    });
+    if (!user) throw new Error('User not found');
+    user.email = data.email;
+    user.password = data.password;
+    return this.usersRepo.save(user);
+  }
+
+  async deleteUser(username: string) {
+    return this.usersRepo.delete({ username });
   }
 }
