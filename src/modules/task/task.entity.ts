@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../user/user.entity';
 
 @Entity()
@@ -16,8 +22,9 @@ export class Task {
   createdAt: Date;
 
   @Column({ type: 'datetime', nullable: true })
-  completedAt: Date;
+  completedAt: Date | null;
 
-  @ManyToOne(() => User, (user: User) => user.tasks, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.tasks, { eager: true })
+  @JoinColumn({ name: 'userId' }) // optional: helps with explicit foreign key
   user: User;
 }

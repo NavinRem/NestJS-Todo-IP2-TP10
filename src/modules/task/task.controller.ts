@@ -8,32 +8,40 @@ import {
   Post,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { Task } from './task.entity';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly taskService: TaskService) {}
-
-  @Get('/:id')
-  getTask(@Param('id') id: string) {
-    return this.taskService.getTask(id);
+  @Get()
+  getAllTasks() {
+    return this.taskService.getAllTasks();
   }
-  @Post('/')
-  createTask(@Body() body: any) {
-    return this.taskService.createTask(body);
+
+  @Post()
+  createTask(@Body() taskDto: CreateTaskDto): Promise<Task> {
+    const username = taskDto.username; // assuming username is sent in body
+    return this.taskService.createTask(taskDto, username);
   }
 
   @Patch('/:id/done')
-  markTaskAsDone(@Body() body: any, @Param('id') id: string) {
-    return this.taskService.updateTask(id, body);
+  markTaskAsDone(@Param('id') id: number) {
+    return this.taskService.updateTask(+id, true);
   }
 
   @Patch('/:id/pending')
-  markTaskAsPending(@Body() body: any, @Param('id') id: string) {
-    return this.taskService.updateTask(id, body);
+  markTaskAsPending(@Param('id') id: number) {
+    return this.taskService.updateTask(+id, false);
+  }
+
+  @Delete('deleteAll')
+  deleteAllTasks() {
+    return this.taskService.deleteAllTasks();
   }
 
   @Delete('/:id')
-  deleteTask(@Param('id') id: string) {
+  deleteTask(@Param('id') id: number) {
     return this.taskService.deleteTask(id);
   }
 }
