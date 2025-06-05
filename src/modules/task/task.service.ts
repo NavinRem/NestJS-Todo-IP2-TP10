@@ -18,10 +18,10 @@ export class TaskService {
     console.log('Fetching all tasks: ', tasks);
     return tasks;
   }
-  async createTask(taskDto: CreateTaskDto, username: string): Promise<Task> {
-    const user = await this.userRepository.findOne({ where: { username } }); // Dummy user ID
+  async createTask(taskDto: CreateTaskDto, userId: number): Promise<Task> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
     const newTask = this.taskRepository.create({
       name: taskDto.name,
@@ -36,6 +36,16 @@ export class TaskService {
     console.log('Task saved: ', saved);
     return saved;
   }
+
+  async findOne(id: number): Promise<Task> {
+    const task = await this.taskRepository.findOne({ where: { id } });
+    if (!task) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
+    console.log('Task found: ', task);
+    return task;
+  }
+
   async updateTask(id: number, completed: boolean) {
     const task = await this.taskRepository.findOneBy({ id });
     if (!task) {
